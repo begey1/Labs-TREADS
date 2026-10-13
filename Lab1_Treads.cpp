@@ -12,8 +12,8 @@
 using namespace std;
 
 // ======================================================
-// 1.2.1 — два потоки без join() і detach()
-// УВАГА: цей пункт навмисно викликає std::terminate.
+// 1.2.1 вЂ” РґРІР° РїРѕС‚РѕРєРё Р±РµР· join() С– detach()
+// РЈР’РђР“Рђ: С†РµР№ РїСѓРЅРєС‚ РЅР°РІРјРёСЃРЅРѕ РІРёРєР»РёРєР°С” std::terminate.
 // ======================================================
 void Thread1_1() {
     cout << "1" << endl;
@@ -27,12 +27,12 @@ void Task_1_2_1() {
     thread t1(Thread1_1);
     thread t2(Thread2_1);
 
-    // Навмисно немає join() або detach().
-    // При знищенні joinable thread програма викличе terminate.
+    // РќР°РІРјРёСЃРЅРѕ РЅРµРјР°С” join() Р°Р±Рѕ detach().
+    // РџСЂРё Р·РЅРёС‰РµРЅРЅС– joinable thread РїСЂРѕРіСЂР°РјР° РІРёРєР»РёС‡Рµ terminate.
 }
 
 // ======================================================
-// 1.2.2 — два від'єднані потоки
+// 1.2.2 вЂ” РґРІР° РІС–Рґ'С”РґРЅР°РЅС– РїРѕС‚РѕРєРё
 // ======================================================
 void Thread1_2() {
     cout << "1" << endl;
@@ -49,13 +49,13 @@ void Task_1_2_2() {
     t1.detach();
     t2.detach();
 
-    // main не очікує завершення цих потоків.
-    // Тому вивід може бути неповним.
+    // main РЅРµ РѕС‡С–РєСѓС” Р·Р°РІРµСЂС€РµРЅРЅСЏ С†РёС… РїРѕС‚РѕРєС–РІ.
+    // РўРѕРјСѓ РІРёРІС–Рґ РјРѕР¶Рµ Р±СѓС‚Рё РЅРµРїРѕРІРЅРёРј.
 }
 
 // ======================================================
-// 1.2.3 — спільний список без mutex
-// Навчальний приклад небезпечного доступу до даних.
+// 1.2.3 вЂ” СЃРїС–Р»СЊРЅРёР№ СЃРїРёСЃРѕРє Р±РµР· mutex
+// РќР°РІС‡Р°Р»СЊРЅРёР№ РїСЂРёРєР»Р°Рґ РЅРµР±РµР·РїРµС‡РЅРѕРіРѕ РґРѕСЃС‚СѓРїСѓ РґРѕ РґР°РЅРёС….
 // ======================================================
 list<int> sharedList3;
 
@@ -63,7 +63,7 @@ void AddToList3(int startValue) {
     for (int i = 0; i < 10; ++i) {
         int value = startValue + i;
         sharedList3.push_back(value);
-        cout << "Додано: " << value << endl;
+        cout << "Р”РѕРґР°РЅРѕ: " << value << endl;
     }
 }
 
@@ -78,8 +78,8 @@ void ListContains3(int target) {
             }
         }
 
-        cout << "Число " << target
-            << (found ? " знайдено" : " не знайдено")
+        cout << "Р§РёСЃР»Рѕ " << target
+            << (found ? " Р·РЅР°Р№РґРµРЅРѕ" : " РЅРµ Р·РЅР°Р№РґРµРЅРѕ")
             << endl;
 
         this_thread::sleep_for(chrono::milliseconds(10));
@@ -97,7 +97,7 @@ void Task_1_2_3() {
 }
 
 // ======================================================
-// 1.2.4 — список захищений mutex
+// 1.2.4 вЂ” СЃРїРёСЃРѕРє Р·Р°С…РёС‰РµРЅРёР№ mutex
 // ======================================================
 list<int> sharedList4;
 mutex listMutex4;
@@ -111,7 +111,7 @@ void AddToList4(int startValue) {
             sharedList4.push_back(value);
         }
 
-        cout << "Додано: " << value << endl;
+        cout << "Р”РѕРґР°РЅРѕ: " << value << endl;
     }
 }
 
@@ -130,8 +130,8 @@ void ListContains4(int target) {
             }
         }
 
-        cout << "Число " << target
-            << (found ? " знайдено" : " не знайдено")
+        cout << "Р§РёСЃР»Рѕ " << target
+            << (found ? " Р·РЅР°Р№РґРµРЅРѕ" : " РЅРµ Р·РЅР°Р№РґРµРЅРѕ")
             << endl;
 
         this_thread::sleep_for(chrono::milliseconds(10));
@@ -149,8 +149,8 @@ void Task_1_2_4() {
 }
 
 // ======================================================
-// 1.2.5 — 10 потоків додавання та 10 потоків пошуку
-// Потоки від'єднуються, але main чекає на їх завершення.
+// 1.2.5 вЂ” 10 РїРѕС‚РѕРєС–РІ РґРѕРґР°РІР°РЅРЅСЏ С‚Р° 10 РїРѕС‚РѕРєС–РІ РїРѕС€СѓРєСѓ
+// РџРѕС‚РѕРєРё РІС–Рґ'С”РґРЅСѓСЋС‚СЊСЃСЏ, Р°Р»Рµ main С‡РµРєР°С” РЅР° С—С… Р·Р°РІРµСЂС€РµРЅРЅСЏ.
 // ======================================================
 list<int> sharedList5;
 mutex listMutex5;
@@ -165,7 +165,7 @@ void AddOne5(int value) {
 
     {
         lock_guard<mutex> lock(outputMutex5);
-        cout << "Додано: " << value << endl;
+        cout << "Р”РѕРґР°РЅРѕ: " << value << endl;
     }
 
     ++completed5;
@@ -187,8 +187,8 @@ void SearchOne5(int target) {
 
     {
         lock_guard<mutex> lock(outputMutex5);
-        cout << "Пошук " << target << ": "
-            << (found ? "знайдено" : "не знайдено")
+        cout << "РџРѕС€СѓРє " << target << ": "
+            << (found ? "Р·РЅР°Р№РґРµРЅРѕ" : "РЅРµ Р·РЅР°Р№РґРµРЅРѕ")
             << endl;
     }
 
@@ -207,16 +207,16 @@ void Task_1_2_5() {
         searchThread.detach();
     }
 
-    // Чекаємо, поки всі 20 від'єднаних потоків завершать роботу.
+    // Р§РµРєР°С”РјРѕ, РїРѕРєРё РІСЃС– 20 РІС–Рґ'С”РґРЅР°РЅРёС… РїРѕС‚РѕРєС–РІ Р·Р°РІРµСЂС€Р°С‚СЊ СЂРѕР±РѕС‚Сѓ.
     while (completed5.load() < 20) {
         this_thread::yield();
     }
 
-    cout << "Усі 20 потоків завершили роботу." << endl;
+    cout << "РЈСЃС– 20 РїРѕС‚РѕРєС–РІ Р·Р°РІРµСЂС€РёР»Рё СЂРѕР±РѕС‚Сѓ." << endl;
 }
 
 // ======================================================
-// 1.2.6 і 1.2.7 — клас exchangePerson
+// 1.2.6 С– 1.2.7 вЂ” РєР»Р°СЃ exchangePerson
 // ======================================================
 struct someData {
     string name;
@@ -237,7 +237,7 @@ public:
         : data{ n, s, a, years } {
     }
 
-    // Забороняємо копіювання об'єкта з mutex.
+    // Р—Р°Р±РѕСЂРѕРЅСЏС”РјРѕ РєРѕРїС–СЋРІР°РЅРЅСЏ РѕР±'С”РєС‚Р° Р· mutex.
     exchangePerson(const exchangePerson&) = delete;
     exchangePerson& operator=(const exchangePerson&) = delete;
 
@@ -245,8 +245,8 @@ public:
         lock_guard<mutex> lock(mtx);
 
         cout << data.name << " " << data.surname
-            << ", адреса: " << data.address
-            << ", вік: " << data.age << endl;
+            << ", Р°РґСЂРµСЃР°: " << data.address
+            << ", РІС–Рє: " << data.age << endl;
     }
 
     static void JohnDoe(exchangePerson& person) {
@@ -271,7 +271,7 @@ public:
         ++completed6;
     }
 
-    // 1.2.6 — std::lock + lock_guard + adopt_lock
+    // 1.2.6 вЂ” std::lock + lock_guard + adopt_lock
     static void Swap12_6(
         exchangePerson& first,
         exchangePerson& second) {
@@ -288,7 +288,7 @@ public:
         swap(first.data, second.data);
     }
 
-    // 1.2.7 — unique_lock + defer_lock
+    // 1.2.7 вЂ” unique_lock + defer_lock
     static void Swap12_7(
         exchangePerson& first,
         exchangePerson& second) {
@@ -314,7 +314,7 @@ void Task_1_2_6() {
     exchangePerson person1("Initial", "One", "Address A", 20);
     exchangePerson person2("Initial", "Two", "Address B", 30);
 
-    cout << "До змін:" << endl;
+    cout << "Р”Рѕ Р·РјС–РЅ:" << endl;
     person1.Print();
     person2.Print();
 
@@ -324,7 +324,7 @@ void Task_1_2_6() {
     t1.detach();
     t2.detach();
 
-    // Чекаємо завершення обох від'єднаних потоків.
+    // Р§РµРєР°С”РјРѕ Р·Р°РІРµСЂС€РµРЅРЅСЏ РѕР±РѕС… РІС–Рґ'С”РґРЅР°РЅРёС… РїРѕС‚РѕРєС–РІ.
     while (completed6.load() < 2) {
         this_thread::yield();
     }
@@ -337,7 +337,7 @@ void Task_1_2_6() {
 
     swapThread.join();
 
-    cout << "Після змін і Swap:" << endl;
+    cout << "РџС–СЃР»СЏ Р·РјС–РЅ С– Swap:" << endl;
     person1.Print();
     person2.Print();
 }
@@ -346,7 +346,7 @@ void Task_1_2_7() {
     exchangePerson person1("John", "Doe", "Unknown", 120);
     exchangePerson person2("Jacob", "Smith", "Known", 1);
 
-    cout << "До Swap:" << endl;
+    cout << "Р”Рѕ Swap:" << endl;
     person1.Print();
     person2.Print();
 
@@ -358,30 +358,30 @@ void Task_1_2_7() {
 
     swapThread.join();
 
-    cout << "Після Swap:" << endl;
+    cout << "РџС–СЃР»СЏ Swap:" << endl;
     person1.Print();
     person2.Print();
 }
 
 // ======================================================
-// 1.2.8 — демонстрація уникнення deadlock
+// 1.2.8 вЂ” РґРµРјРѕРЅСЃС‚СЂР°С†С–СЏ СѓРЅРёРєРЅРµРЅРЅСЏ deadlock
 // ======================================================
 void Task_1_2_8() {
-    cout << "Для уникнення deadlock потрібно узгоджено "
-        << "захоплювати декілька mutex." << endl;
+    cout << "Р”Р»СЏ СѓРЅРёРєРЅРµРЅРЅСЏ deadlock РїРѕС‚СЂС–Р±РЅРѕ СѓР·РіРѕРґР¶РµРЅРѕ "
+        << "Р·Р°С…РѕРїР»СЋРІР°С‚Рё РґРµРєС–Р»СЊРєР° mutex." << endl;
 
-    cout << "std::lock намагається захопити всі передані "
-        << "м'ютекси без взаємного блокування." << endl;
+    cout << "std::lock РЅР°РјР°РіР°С”С‚СЊСЃСЏ Р·Р°С…РѕРїРёС‚Рё РІСЃС– РїРµСЂРµРґР°РЅС– "
+        << "Рј'СЋС‚РµРєСЃРё Р±РµР· РІР·Р°С”РјРЅРѕРіРѕ Р±Р»РѕРєСѓРІР°РЅРЅСЏ." << endl;
 
-    cout << "lock_guard автоматично звільняє mutex, "
-        << "а unique_lock із defer_lock дозволяє "
-        << "відкласти його захоплення." << endl;
+    cout << "lock_guard Р°РІС‚РѕРјР°С‚РёС‡РЅРѕ Р·РІС–Р»СЊРЅСЏС” mutex, "
+        << "Р° unique_lock С–Р· defer_lock РґРѕР·РІРѕР»СЏС” "
+        << "РІС–РґРєР»Р°СЃС‚Рё Р№РѕРіРѕ Р·Р°С…РѕРїР»РµРЅРЅСЏ." << endl;
 
     Task_1_2_7();
 }
 
 // ======================================================
-// Головна функція — вибір завдання через меню
+// Р“РѕР»РѕРІРЅР° С„СѓРЅРєС†С–СЏ вЂ” РІРёР±С–СЂ Р·Р°РІРґР°РЅРЅСЏ С‡РµСЂРµР· РјРµРЅСЋ
 // ======================================================
 int main() {
     
@@ -389,21 +389,21 @@ int main() {
     SetConsoleCP(1251);
 	SetConsoleOutputCP(1251);
 
-    cout << "Лабораторна робота №1" << endl;
-    cout << "Оберіть завдання:" << endl;
-    cout << "1 - Завдання 1.2.1 (очікується terminate)" << endl;
-    cout << "2 - Завдання 1.2.2 (detach)" << endl;
-    cout << "3 - Завдання 1.2.3 (без mutex)" << endl;
-    cout << "4 - Завдання 1.2.4 (з mutex)" << endl;
-    cout << "5 - Завдання 1.2.5 (20 потоків)" << endl;
-    cout << "6 - Завдання 1.2.6 (adopt_lock)" << endl;
-    cout << "7 - Завдання 1.2.7 (defer_lock)" << endl;
-    cout << "8 - Завдання 1.2.8 (deadlock)" << endl;
-    cout << "Ваш вибір: ";
+    cout << "Р›Р°Р±РѕСЂР°С‚РѕСЂРЅР° СЂРѕР±РѕС‚Р° в„–1" << endl;
+    cout << "РћР±РµСЂС–С‚СЊ Р·Р°РІРґР°РЅРЅСЏ:" << endl;
+    cout << "1 - Р—Р°РІРґР°РЅРЅСЏ 1.2.1 (РѕС‡С–РєСѓС”С‚СЊСЃСЏ terminate)" << endl;
+    cout << "2 - Р—Р°РІРґР°РЅРЅСЏ 1.2.2 (detach)" << endl;
+    cout << "3 - Р—Р°РІРґР°РЅРЅСЏ 1.2.3 (Р±РµР· mutex)" << endl;
+    cout << "4 - Р—Р°РІРґР°РЅРЅСЏ 1.2.4 (Р· mutex)" << endl;
+    cout << "5 - Р—Р°РІРґР°РЅРЅСЏ 1.2.5 (20 РїРѕС‚РѕРєС–РІ)" << endl;
+    cout << "6 - Р—Р°РІРґР°РЅРЅСЏ 1.2.6 (adopt_lock)" << endl;
+    cout << "7 - Р—Р°РІРґР°РЅРЅСЏ 1.2.7 (defer_lock)" << endl;
+    cout << "8 - Р—Р°РІРґР°РЅРЅСЏ 1.2.8 (deadlock)" << endl;
+    cout << "Р’Р°С€ РІРёР±С–СЂ: ";
 
     int choice;
     if (!(cin >> choice)) {
-        cout << "Помилка введення." << endl;
+        cout << "РџРѕРјРёР»РєР° РІРІРµРґРµРЅРЅСЏ." << endl;
         return 1;
     }
 
@@ -417,12 +417,12 @@ int main() {
     case 7: Task_1_2_7(); break;
     case 8: Task_1_2_8(); break;
     default:
-        cout << "Невідомий пункт меню." << endl;
+        cout << "РќРµРІС–РґРѕРјРёР№ РїСѓРЅРєС‚ РјРµРЅСЋ." << endl;
         return 1;
     }
 
     if (choice != 1 && choice != 2) {
-        cout << "Завдання завершено." << endl;
+        cout << "Р—Р°РІРґР°РЅРЅСЏ Р·Р°РІРµСЂС€РµРЅРѕ." << endl;
     }
 
     return 0;
