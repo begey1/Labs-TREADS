@@ -1,1 +1,158 @@
+#include <iostream>
+#include <windows.h>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
+#include <deque>
+#include <future>
+#include <vector>
+#include <cmath>
+#include <string>
 
+using namespace std;
+
+unsigned long long nthPrime(int n)
+{
+    if (n == 1) return 2;
+
+    size_t limit = (n < 6) ? 15 :
+        static_cast<size_t>(
+            n * (log((double)n) + log(log((double)n)))
+            ) + 20;
+
+    while (true)
+    {
+        vector<bool> prime(limit + 1, true);
+        prime[0] = prime[1] = false;
+
+        for (size_t p = 2; p <= limit / p; ++p)
+        {
+            if (prime[p])
+            {
+                for (size_t j = p * p; j <= limit; j += p)
+                    prime[j] = false;
+            }
+        }
+
+        int count = 0;
+
+        for (size_t v = 2; v <= limit; ++v)
+        {
+            if (prime[v] && ++count == n)
+                return v;
+        }
+
+        limit *= 2;
+    }
+}
+
+deque<packaged_task<unsigned long long()>> tasks;
+deque<int> taskNumbers;
+
+mutex queueMutex;
+condition_variable queueCV;
+bool stopWorker = false;
+
+void Worker()
+{
+    while (true)
+    {
+        packaged_task<unsigned long long()> task;
+
+        {
+            unique_lock<mutex> lock(queueMutex);
+
+            queueCV.wait(lock, [] {
+                return stopWorker || !tasks.empty();
+                });
+
+            if (tasks.empty() && stopWorker)
+                return;
+
+            task = move(tasks.front());
+            tasks.pop_front();
+            taskNumbers.pop_front();
+        }
+
+        task();
+    }
+}
+
+int main()
+{
+
+
+	SetConsoleCP(1251);
+	SetConsoleOutputCP(1251);
+
+    vector<pair<int, future<unsigned long long>>> results;
+
+    thread worker(Worker);
+
+    cout << "Введіть n для обчислення n-го простого числа." << "\n";
+    cout << "Введіть q, щоб завершити введення." << "\n";
+
+    string input;
+
+    while (cin >> input)
+    {
+        if (input == "q" || input == "Q")
+            break;
+
+        try
+        {
+            size_t pos = 0;
+            int n = stoi(input, &pos);
+
+            if (pos != input.size() || n < 1)
+            {
+                cout << "Введіть додатне ціле число або q." << "\n";
+                continue;
+            }
+
+            packaged_task<unsigned long long()> task(
+                [n] { return nthPrime(n); }
+            );
+
+            future<unsigned long long> result =
+                task.get_future();
+
+            {
+                lock_guard<mutex> lock(queueMutex);
+
+                tasks.push_back(move(task));
+                taskNumbers.push_back(n);
+                results.emplace_back(n, move(result));
+            }
+
+            queueCV.notify_one();
+
+            cout << "Завдання для n = " << n
+                << " додано до черги." << "\n";
+        }
+        catch (...)
+        {
+            cout << "Некоректне введення. Спробуйте ще раз."
+                << "\n";
+        }
+    }
+
+    {
+        lock_guard<mutex> lock(queueMutex);
+        stopWorker = true;
+    }
+
+    queueCV.notify_all();
+    worker.join();
+
+    cout << "\nРезультати обчислень:" << "\n";
+
+    for (auto& item : results)
+    {
+        cout << item.first << "-те просте число = "
+            << item.second.get() << "\n";
+    }
+
+    cout << "Усі завдання виконано." << "\n";
+    return 0;
+}
