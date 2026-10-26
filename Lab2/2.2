@@ -1,1 +1,65 @@
+#include <iostream>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
+#include <chrono>
+#include <vector>
+#include <windows.h>
 
+using namespace std;
+
+mutex m;
+condition_variable cv;
+int i = 0;
+
+void Waits(int number)
+{
+    unique_lock<mutex> lock(m);
+
+    cout << "Потік Waits " << number
+        << ": очікування сигналу." << "\n";
+
+    cv.wait(lock, [] { return i == 1; });
+
+    cout << "Потік Waits " << number
+        << ": очікування завершено." << "\n";
+}
+
+void Awake()
+{
+    this_thread::sleep_for(chrono::milliseconds(100));
+
+    cout << "Awake: перше сповіщення." << "\n";
+    cv.notify_all();
+
+    this_thread::sleep_for(chrono::milliseconds(100));
+
+    {
+        lock_guard<mutex> lock(m);
+        i = 1;
+    }
+
+    cout << "Awake: повторне сповіщення." << "\n";
+    cv.notify_all();
+}
+
+int main()
+{
+
+	SetConsoleCP(1251);
+	SetConsoleOutputCP(1251);
+    vector<thread> waiters;
+
+    for (int n = 1; n <= 3; ++n)
+        waiters.emplace_back(Waits, n);
+
+    thread awake(Awake);
+
+    for (auto& t : waiters)
+        t.join();
+
+    awake.join();
+
+    cout << "Усі потоки завершили роботу." << "\n";
+    return 0;
+} 
