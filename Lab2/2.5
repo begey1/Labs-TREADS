@@ -1,1 +1,148 @@
+#include <iostream>
+#include <windows.h>
+#include <future>
+#include <vector>
+#include <cmath>
+#include <chrono>
+#include <stdexcept>
 
+
+using namespace std;
+using Clock = chrono::steady_clock;
+
+unsigned long long nthPrime(int n)
+{
+    if (n < 1)
+        throw invalid_argument("n must be positive");
+
+    if (n == 1) return 2;
+
+    size_t limit = (n < 6) ? 15 :
+        static_cast<size_t>(
+            n * (log((double)n) + log(log((double)n)))
+            ) + 20;
+
+    while (true)
+    {
+        vector<bool> prime(limit + 1, true);
+        prime[0] = prime[1] = false;
+
+        for (size_t p = 2; p <= limit / p; ++p)
+        {
+            if (prime[p])
+            {
+                for (size_t j = p * p; j <= limit; j += p)
+                    prime[j] = false;
+            }
+        }
+
+        int count = 0;
+
+        for (size_t v = 2; v <= limit; ++v)
+        {
+            if (prime[v] && ++count == n)
+                return v;
+        }
+
+        limit *= 2;
+    }
+}
+
+double calculateFunction(int choice, double x)
+{
+    if (choice == 1) return sqrt(x);
+    if (choice == 2) return sin(x);
+    if (choice == 3) return log(x);
+
+    throw invalid_argument("Unknown function");
+}
+
+int askFunction()
+{
+    int choice;
+
+    cout << "Оберіть функцію: "
+        << "1 - корінь, 2 - синус, 3 - натуральний логарифм: ";
+
+    cin >> choice;
+    return choice;
+}
+
+int main()
+{
+    int n;
+
+
+	SetConsoleCP(1251);
+	SetConsoleOutputCP(1251);
+
+    cout << "Введіть n — номер простого числа: ";
+
+    if (!(cin >> n) || n < 1)
+    {
+        cout << "Потрібно ввести додатне ціле число." << "\n";
+        return 1;
+    }
+
+    cout << "\nРежим deferred." << "\n";
+
+    auto deferred = async(launch::deferred, nthPrime, n);
+
+    cout << "Обчислення простого числа відкладене." << "\n";
+
+    int choice = askFunction();
+
+    if (choice < 1 || choice > 3)
+    {
+        cout << "Некоректний вибір." << "";
+        return 1;
+    }
+
+    cout << "Значення функції: "
+        << calculateFunction(choice, n) << "\n";
+
+    auto start = Clock::now();
+    auto result = deferred.get();
+    auto finish = Clock::now();
+
+    auto deferredTime =
+        chrono::duration_cast<chrono::milliseconds>(
+            finish - start).count();
+
+    cout << n << "-те просте число: " << result << "\n";
+    cout << "Час очікування get() у deferred: "
+        << deferredTime << " мс" << "\n";
+
+    cout << "\nРежим async." << "\n";
+
+    auto asynchronous = async(launch::async, nthPrime, n);
+
+    cout << "Обчислення виконується в окремому потоці." << "\n";    
+    choice = askFunction();
+
+    if (choice < 1 || choice > 3)
+    {
+        cout << "Некоректний вибір." << "\n";
+        return 1;
+    }
+
+    cout << "Значення функції: "
+        << calculateFunction(choice, n) << "\n";
+
+    start = Clock::now();
+    result = asynchronous.get();
+    finish = Clock::now();
+
+    auto asyncTime =
+        chrono::duration_cast<chrono::milliseconds>(
+            finish - start).count();
+
+    cout << n << "-те просте число: " << result << "\n";
+    cout << "Час очікування get() у async: "
+        << asyncTime << " мс" << "\n";
+
+    cout << "\nВисновок: deferred починає обчислення "
+        << "під час get(), а async запускає його асинхронно."
+        << "\n";
+    return 0;
+}
