@@ -1,1 +1,73 @@
 
+#include <iostream>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
+#include <chrono>
+#include <windows.h>
+
+using namespace std;
+
+mutex m;
+condition_variable cv;
+bool signalReceived = false;
+bool finishWaiting = false;
+
+void WaitForSignal(int number)
+{
+    unique_lock<mutex> lock(m);
+
+    cv.wait(lock, [] {
+        return signalReceived || finishWaiting;
+        });
+
+    if (signalReceived && !finishWaiting)
+    {
+        cout << "Повідомлення з потоку "
+            << number << endl;
+    }
+}
+
+void Notify()
+{
+    this_thread::sleep_for(chrono::milliseconds(100));
+
+    {
+        lock_guard<mutex> lock(m);
+        signalReceived = true;
+    }
+
+    cout << "Notify: викликається notify_one()." << endl;
+    cv.notify_one();
+}
+
+int main()
+{
+    SetConsoleCP(1251);
+    SetConsoleOutputCP(1251);
+
+    thread Thread1(WaitForSignal, 1);
+    thread Thread2(WaitForSignal, 2);
+    thread Thread3(WaitForSignal, 3);
+    thread notifier(Notify);
+
+    notifier.join();
+
+    this_thread::sleep_for(chrono::milliseconds(100));
+
+    {
+        lock_guard<mutex> lock(m);
+        finishWaiting = true;
+    }
+
+    cv.notify_all();
+
+    Thread1.join();
+    Thread2.join();
+    Thread3.join();
+
+    cout << "Головний потік завершив роботу." << endl;
+
+    return 0;
+}
+
