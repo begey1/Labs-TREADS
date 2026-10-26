@@ -1,1 +1,120 @@
 
+#include <iostream>
+#include <windows.h>
+#include <future>
+#include <chrono>
+#include <vector>
+#include <cmath>
+#include <stdexcept>
+
+using namespace std;
+
+unsigned long long nthPrime(int n)
+{
+    if (n < 1)
+        throw invalid_argument("n must be positive");
+
+    if (n == 1) return 2;
+
+    size_t limit = (n < 6) ? 15 :
+        static_cast<size_t>(
+            n * (log((double)n) + log(log((double)n)))
+            ) + 20;
+
+    while (true)
+    {
+        vector<bool> prime(limit + 1, true);
+        prime[0] = prime[1] = false;
+
+        for (size_t p = 2; p <= limit / p; ++p)
+        {
+            if (prime[p])
+            {
+                for (size_t j = p * p; j <= limit; j += p)
+                    prime[j] = false;
+            }
+        }
+
+        int count = 0;
+
+        for (size_t v = 2; v <= limit; ++v)
+        {
+            if (prime[v] && ++count == n)
+                return v;
+        }
+
+        limit *= 2;
+    }
+}
+
+int main()
+{
+
+
+	SetConsoleCP(1251); 
+	SetConsoleOutputCP(1251);
+    int n;
+
+    cout << "Введіть додатне n: ";
+
+    if (!(cin >> n) || n < 1)
+    {
+        cout << "Некоректне значення n." << "\n";
+        return 1;
+    }
+
+    promise<unsigned long long> promiseN;
+    promise<unsigned long long> promiseTenN;
+    promise<bool> promiseStarted;
+
+    future<unsigned long long> futureN =
+        promiseN.get_future();
+
+    future<unsigned long long> futureTenN =
+        promiseTenN.get_future();
+
+    future<bool> futureStarted =
+        promiseStarted.get_future();
+
+    thread first(
+        [n,
+        pN = move(promiseN),
+        pTenN = move(promiseTenN),
+        pStarted = move(promiseStarted)]() mutable
+        {
+            pN.set_value(nthPrime(n));
+
+            pStarted.set_value(true);
+
+            pTenN.set_value(nthPrime(n * 10));
+        }
+    );
+
+    thread second(
+        [n, started = move(futureStarted)]() mutable
+        {
+            if (started.get())
+            {
+                this_thread::sleep_for(
+                    chrono::seconds(2)
+                );
+
+                cout << "Квадратний корінь з n = "
+                    << sqrt(static_cast<double>(n))
+                    << "\n";
+            }
+        }
+    );
+
+    cout << n << " -те просте число: "
+        << futureN.get() << "\n";
+
+    cout << n * 10 << " -те просте число: "
+        << futureTenN.get() << "\n";
+
+    first.join();
+    second.join();
+
+    cout << "Обидва потоки завершили роботу." << "\n";
+    return 0;
+}
