@@ -24,7 +24,7 @@ bool isPrime(int n)
 
 void DataPreparation()
 {
-    cout << "Введіть цілі числа (q - завершити):" << endl;
+    cout << "Введіть цілі числа (q - завершити):" << "\n";
     string input;
 
     while (cin >> input)
@@ -39,7 +39,7 @@ void DataPreparation()
 
             if (pos != input.size())
             {
-                cout << "Введіть ціле число або q." << endl;
+                cout << "Введіть ціле число або q." << "\n";
                 continue;
             }
 
@@ -48,7 +48,7 @@ void DataPreparation()
         }
         catch (...)
         {
-            cout << "Введіть ціле число або q." << endl;
+            cout << "Введіть ціле число або q." << "\n";
         }
     }
 
@@ -94,6 +94,6 @@ int main()
 
     DataProcessing();
 
-    cout << "Програму завершено." << endl;
+    cout << "Програму завершено." << "\n";
     return 0;
 }
